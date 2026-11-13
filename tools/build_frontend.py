@@ -1,7 +1,7 @@
 """
 Regenerates frontend/index.html (the Netlify login page) from backend/main.py, so the two never drift apart.
 
-    python tools/build_frontend.py https://your-app.onrender.com
+    python tools/build_frontend.py https://agrisense-backend-jagn.onrender.com
 
 Only needed when you change translations or styles in main.py. Without an argument it keeps the placeholder URL.
 """
