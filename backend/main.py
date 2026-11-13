@@ -643,7 +643,10 @@ def set_session_cookie(resp, request: Request, token: str) -> None:
 
 def same_origin(request: Request) -> bool:
     """Extra CSRF defence on top of SameSite=Lax cookies: reject POSTs that come from another site."""
-    origin = request.headers.get("origin") or request.headers.get("referer")
+    fetch_site = request.headers.get("sec-fetch-site")  # sent by all modern browsers, cannot be forged by a web page
+    if fetch_site:
+        return fetch_site in ("same-origin", "none")
+    origin = request.headers.get("origin") or request.headers.get("referer")  # older browsers
     return True if not origin else urlparse(origin).netloc == request.headers.get("host", "")
 
 
@@ -963,7 +966,7 @@ async def security_headers(request: Request, call_next):
     resp.headers.setdefault("Content-Security-Policy", CSP)
     resp.headers.setdefault("X-Content-Type-Options", "nosniff")
     resp.headers.setdefault("X-Frame-Options", "DENY")
-    resp.headers.setdefault("Referrer-Policy", "no-referrer")
+    resp.headers.setdefault("Referrer-Policy", "same-origin")
     if resp.headers.get("content-type", "").startswith("text/html"):
         resp.headers.setdefault("Cache-Control", "no-store")  # signed-in pages must not be cached
     return resp
