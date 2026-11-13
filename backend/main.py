@@ -951,7 +951,7 @@ def app_page(user, convs: list, msgs: list, cid: str, error: str = "", prefill: 
 # =====================================================================
 # 10. ROUTES
 # =====================================================================
-app = FastAPI(title="Agri Sense", version="4.0.0", docs_url=None, redoc_url=None, openapi_url=None)
+app = FastAPI(title="FarmerFamAI", version="4.0.0", docs_url=None, redoc_url=None, openapi_url=None)
 
 # No scripts at all, forms may only post to this same site, nothing can frame the page.
 CSP = (
