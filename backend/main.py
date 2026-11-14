@@ -46,7 +46,7 @@ BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash").strip()
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "").strip() or "gemini-3.5-flash-lite"  # gemini-2.5-* is closed to new keys / retiring
 OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY", "").strip()
 DATA_GOV_API_KEY = os.getenv("DATA_GOV_API_KEY", "").strip()
 FRONTEND_URL = os.getenv("FRONTEND_URL", "").strip().rstrip("/")  # optional: "/" redirects here (your Netlify page)
@@ -450,26 +450,43 @@ def _get_client() -> genai.Client:
     return _client
 
 
+_guard_pref = 0  # remembers which guard config worked, so a rejected one is not retried on every message
+
+
+def _guard_configs():
+    """Gemini 2.5 turns thinking off with a budget, Gemini 3 uses levels; try the options in turn."""
+    base = {"system_instruction": GUARD_PROMPT}
+    if not GUARD_MODEL.startswith("gemini-3"):
+        base["temperature"] = 0  # Gemini 3 works best at its default temperature
+    yield types.GenerateContentConfig(**base, max_output_tokens=16, thinking_config=types.ThinkingConfig(thinking_budget=0))
+    try:
+        yield types.GenerateContentConfig(**base, max_output_tokens=16, thinking_config=types.ThinkingConfig(thinking_level="MINIMAL"))
+    except Exception:
+        pass
+    yield types.GenerateContentConfig(**base, max_output_tokens=512)  # no thinking control: leave room for thinking tokens
+
+
 def is_farming_question(prior: list, text: str) -> bool:
     """Layer 1: a tiny YES/NO classifier call. Fails OPEN (the main prompt below is layer 2)."""
+    global _guard_pref
     ctx = ""
     if prior:
         ctx = f"Previous message ({prior[-1]['role']}): {prior[-1]['content'][:300]}\n\n"
-    try:
-        resp = _get_client().models.generate_content(
-            model=GUARD_MODEL,
-            contents=f"{ctx}USER'S LATEST MESSAGE:\n{text}",
-            config=types.GenerateContentConfig(
-                system_instruction=GUARD_PROMPT,
-                temperature=0,
-                max_output_tokens=16,
-                thinking_config=types.ThinkingConfig(thinking_budget=0),
-            ),
-        )
-        return not (resp.text or "").strip().upper().startswith("NO")
-    except Exception as exc:
-        log.warning("Scope guard unavailable (%s); relying on the main prompt", exc)
-        return True
+    contents = f"{ctx}USER'S LATEST MESSAGE:\n{text}"
+    configs = list(_guard_configs())
+    last_exc = None
+    for i in range(_guard_pref, len(configs)):
+        try:
+            resp = _get_client().models.generate_content(model=GUARD_MODEL, contents=contents, config=configs[i])
+        except Exception as exc:  # e.g. 400 "thinking not supported" -> try the next config
+            last_exc = exc
+            continue
+        verdict = (resp.text or "").strip().upper()
+        if verdict:
+            _guard_pref = i
+            return not verdict.startswith("NO")
+    log.warning("Scope guard unavailable (%s); relying on the main prompt", last_exc or "empty answer")
+    return True
 
 
 def ask_gemini(history: list, location: Optional[str], image_jpeg: Optional[bytes], lang: str = "en") -> str:
@@ -505,7 +522,7 @@ def ask_gemini(history: list, location: Optional[str], image_jpeg: Optional[byte
             tools=[get_weather, get_market_prices],  # the SDK runs these automatically when Gemini asks
             automatic_function_calling=types.AutomaticFunctionCallingConfig(maximum_remote_calls=MAX_TOOL_ROUNDS),
             max_output_tokens=MAX_OUTPUT_TOKENS,
-            temperature=0.4,
+            **({} if GEMINI_MODEL.startswith("gemini-3") else {"temperature": 0.4}),
         ),
     )
     text = (resp.text or "").strip()
@@ -951,7 +968,7 @@ def app_page(user, convs: list, msgs: list, cid: str, error: str = "", prefill: 
 # =====================================================================
 # 10. ROUTES
 # =====================================================================
-app = FastAPI(title="FarmerFamAI", version="4.0.0", docs_url=None, redoc_url=None, openapi_url=None)
+app = FastAPI(title="Agri Sense", version="4.0.0", docs_url=None, redoc_url=None, openapi_url=None)
 
 # No scripts at all, forms may only post to this same site, nothing can frame the page.
 CSP = (
