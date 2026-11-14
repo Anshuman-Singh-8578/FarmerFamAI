@@ -1,35 +1,44 @@
 """
-Shows WHY Gemini is failing and which models your key can use.
+Shows WHY Gemini fails. Runs the same calls the website makes, one step at a time.
 
     cd backend
     python check_gemini.py
 """
 import os
+import traceback
 
-from dotenv import load_dotenv
-from google import genai
+os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")  # do not touch your real database
+from dotenv import load_dotenv  # noqa: E402
 
 load_dotenv()
-key = os.getenv("GEMINI_API_KEY", "").strip()
-model = os.getenv("GEMINI_MODEL", "").strip() or "gemini-3.5-flash-lite"
+from google import genai  # noqa: E402
+
+import main  # noqa: E402
+
+key = main.GEMINI_API_KEY
 if not key:
     raise SystemExit("GEMINI_API_KEY is empty in backend/.env")
+print(f"Key: {key[:6]}...{key[-3:]} | model: {main.GEMINI_MODEL} | guard model: {main.GUARD_MODEL}\n")
+
+
+def step(title, fn):
+    print(f"--- {title}")
+    try:
+        out = fn()
+        print("   OK ->", str(out)[:300].replace("\n", " "), "\n")
+        return True
+    except Exception as exc:
+        print(f"   FAILED -> {type(exc).__name__}: {exc}\n")
+        if os.getenv("VERBOSE"):
+            traceback.print_exc()
+        return False
+
 
 client = genai.Client(api_key=key)
-print(f"Key: {key[:6]}...{key[-3:]}   Model to test: {model}\n")
-
-print("Models available to this key (flash family):")
-try:
-    names = sorted(m.name.replace("models/", "") for m in client.models.list() if "flash" in m.name)
-    print("  " + "\n  ".join(names) if names else "  (none found)")
-except Exception as exc:
-    print("  Could not list models ->", exc)
-
-print(f"\nTest call to {model}:")
-try:
-    r = client.models.generate_content(model=model, contents="Reply with the single word: OK")
-    print("  SUCCESS ->", (r.text or "").strip()[:80])
-except Exception as exc:
-    print("  FAILED  ->", exc)
-    print("\n  Typical meanings:  API_KEY_INVALID = wrong/disabled key | 404 'not found' = model name not available to you"
-          " | 403 PERMISSION_DENIED = key restricted or API not enabled | 429 = quota")
+step("1. plain call (what the earlier test did)", lambda: client.models.generate_content(model=main.GEMINI_MODEL, contents="Reply with the single word: OK").text)
+step("2. scope guard: farming question (expect True)", lambda: main.is_farming_question([], "How do I grow tomatoes?"))
+step("3. scope guard: off-topic (expect False)", lambda: main.is_farming_question([], "Write a python script"))
+step("4. website call, no tools needed", lambda: main.ask_gemini([{"role": "user", "content": "Give me two tips for growing wheat."}], None, None, "en"))
+step("5. website call WITH a tool (weather)", lambda: main.ask_gemini([{"role": "user", "content": "What is the weather in Pune today?"}], None, None, "en"))
+step("6. website call WITH a tool (mandi prices)", lambda: main.ask_gemini([{"role": "user", "content": "Tomato price in Delhi"}], None, None, "en"))
+print("Send me the FAILED lines (no key). If everything is OK here, the problem is only on Render: check its Logs tab.")

@@ -45,10 +45,16 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
+
+def _env(name: str, default: str = "") -> str:
+    """Read an env var, tolerating stray spaces, line breaks or quotes pasted into a dashboard."""
+    return os.getenv(name, default).strip().strip("\"'").strip()
+
+
+GEMINI_API_KEY = _env("GEMINI_API_KEY")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "").strip() or "gemini-3.5-flash-lite"  # gemini-2.5-* is closed to new keys / retiring
-OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY", "").strip()
-DATA_GOV_API_KEY = os.getenv("DATA_GOV_API_KEY", "").strip()
+OPENWEATHER_API_KEY = _env("OPENWEATHER_API_KEY")
+DATA_GOV_API_KEY = _env("DATA_GOV_API_KEY")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "").strip().rstrip("/")  # optional: "/" redirects here (your Netlify page)
 RATE_LIMIT_PER_MINUTE = int(os.getenv("RATE_LIMIT_PER_MINUTE", "20"))
 GUARD_MODEL = os.getenv("GUARD_MODEL", "").strip() or GEMINI_MODEL  # model for the YES/NO farming-scope check
@@ -454,15 +460,18 @@ _guard_pref = 0  # remembers which guard config worked, so a rejected one is not
 
 
 def _guard_configs():
-    """Gemini 2.5 turns thinking off with a budget, Gemini 3 uses levels; try the options in turn."""
+    """Gemini 2.x turns thinking off with a budget, Gemini 3 / "-latest" aliases use levels; best guess first."""
+    legacy = GUARD_MODEL.startswith(("gemini-2", "gemini-1"))
     base = {"system_instruction": GUARD_PROMPT}
-    if not GUARD_MODEL.startswith("gemini-3"):
+    if legacy:
         base["temperature"] = 0  # Gemini 3 works best at its default temperature
-    yield types.GenerateContentConfig(**base, max_output_tokens=16, thinking_config=types.ThinkingConfig(thinking_budget=0))
-    try:
-        yield types.GenerateContentConfig(**base, max_output_tokens=16, thinking_config=types.ThinkingConfig(thinking_level="MINIMAL"))
-    except Exception:
-        pass
+    budget = lambda: types.GenerateContentConfig(**base, max_output_tokens=16, thinking_config=types.ThinkingConfig(thinking_budget=0))  # noqa: E731
+    level = lambda: types.GenerateContentConfig(**base, max_output_tokens=16, thinking_config=types.ThinkingConfig(thinking_level="MINIMAL"))  # noqa: E731
+    for make in ((budget, level) if legacy else (level, budget)):
+        try:
+            yield make()
+        except Exception:  # an older SDK without thinking_level
+            continue
     yield types.GenerateContentConfig(**base, max_output_tokens=512)  # no thinking control: leave room for thinking tokens
 
 
@@ -514,17 +523,23 @@ def ask_gemini(history: list, location: Optional[str], image_jpeg: Optional[byte
     if location:
         system += f"\nUser's saved location: {location}"
 
-    resp = _get_client().models.generate_content(
-        model=GEMINI_MODEL,
-        contents=contents,
-        config=types.GenerateContentConfig(
-            system_instruction=system,
-            tools=[get_weather, get_market_prices],  # the SDK runs these automatically when Gemini asks
-            automatic_function_calling=types.AutomaticFunctionCallingConfig(maximum_remote_calls=MAX_TOOL_ROUNDS),
-            max_output_tokens=MAX_OUTPUT_TOKENS,
-            **({} if GEMINI_MODEL.startswith("gemini-3") else {"temperature": 0.4}),
-        ),
+    cfg = types.GenerateContentConfig(
+        system_instruction=system,
+        tools=[get_weather, get_market_prices],  # the SDK runs these automatically when Gemini asks
+        automatic_function_calling=types.AutomaticFunctionCallingConfig(maximum_remote_calls=MAX_TOOL_ROUNDS),
+        max_output_tokens=MAX_OUTPUT_TOKENS,
+        **({"temperature": 0.4} if GEMINI_MODEL.startswith(("gemini-2", "gemini-1")) else {}),
     )
+    for attempt in range(3):  # Google sometimes answers 503 "overloaded" for a second or two
+        try:
+            resp = _get_client().models.generate_content(model=GEMINI_MODEL, contents=contents, config=cfg)
+            break
+        except genai_errors.APIError as exc:
+            if getattr(exc, "code", None) in (500, 503, 504) and attempt < 2:
+                log.warning("Gemini temporary error %s, retrying", exc.code)
+                time.sleep(1.5 * (attempt + 1))
+                continue
+            raise
     text = (resp.text or "").strip()
     return text or tr("e_server", lang)
 
@@ -1130,8 +1145,8 @@ def chat(
 
     text = (topic or message).strip()[:MAX_MESSAGE_CHARS]
 
-    def fail(key: str, status: int):
-        return show_app(request, conv_id, error=tr(key, ulang), prefill=text, status=status)
+    def fail(key: str, status: int, tag: str = ""):
+        return show_app(request, conv_id, error=tr(key, ulang) + (f" [{tag}]" if tag else ""), prefill=text, status=status)
 
     # --- checks ---
     image = None
@@ -1163,7 +1178,9 @@ def chat(
             reply = ask_gemini(prior + [{"role": "user", "content": text}], uloc or None, image, ulang)
     except genai_errors.APIError as exc:
         log.error("Gemini API error %s: %s", getattr(exc, "code", "?"), exc)
-        return fail("e_busy", 429) if getattr(exc, "code", None) == 429 else fail("e_down", 502)
+        code = getattr(exc, "code", None)
+        tag = f"Gemini {code} {getattr(exc, 'status', '') or ''}".strip()  # e.g. "Gemini 403 PERMISSION_DENIED"
+        return fail("e_busy", 429, tag) if code == 429 else fail("e_down", 502, tag)
     except Exception:
         log.exception("Unexpected chat failure")
         return fail("e_server", 500)
