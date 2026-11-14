@@ -11,8 +11,6 @@ os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")  # do not touch your
 from dotenv import load_dotenv  # noqa: E402
 
 load_dotenv()
-from google import genai  # noqa: E402
-
 import main  # noqa: E402
 
 key = main.GEMINI_API_KEY
@@ -34,7 +32,7 @@ def step(title, fn):
         return False
 
 
-client = genai.Client(api_key=key)
+client = main._get_client()  # same client the website uses (pinned API version)
 step("1. plain call (what the earlier test did)", lambda: client.models.generate_content(model=main.GEMINI_MODEL, contents="Reply with the single word: OK").text)
 step("2. scope guard: farming question (expect True)", lambda: main.is_farming_question([], "How do I grow tomatoes?"))
 step("3. scope guard: off-topic (expect False)", lambda: main.is_farming_question([], "Write a python script"))

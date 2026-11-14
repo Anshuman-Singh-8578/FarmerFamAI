@@ -452,7 +452,9 @@ _client: Optional[genai.Client] = None
 def _get_client() -> genai.Client:
     global _client
     if _client is None:
-        _client = genai.Client(api_key=GEMINI_API_KEY)
+        # Pin the API version: "-latest" and preview models only exist on v1beta, and the SDK default can differ
+        # between SDK releases (that mismatch caused "models/... is not found for API version v1" on Render).
+        _client = genai.Client(api_key=GEMINI_API_KEY, http_options=types.HttpOptions(api_version="v1beta"))
     return _client
 
 
