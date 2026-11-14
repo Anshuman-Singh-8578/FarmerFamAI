@@ -35,7 +35,7 @@ from google import genai
 from google.genai import errors as genai_errors
 from google.genai import types
 from PIL import Image, ImageOps
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text, create_engine, delete, func, select
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text, create_engine, delete, func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
@@ -199,6 +199,7 @@ def get_weather(city: str) -> dict:
 _PRICE_URL = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070"
 _CACHE_TTL = 30 * 60
 _price_cache: dict = {}
+_mandi_down_until = 0.0  # after a failure, skip the slow government API for a few minutes
 _price_lock = threading.Lock()
 
 
@@ -243,7 +244,7 @@ def _fetch_commodity(commodity: str, state: str) -> Optional[dict]:
                 "api-key": DATA_GOV_API_KEY, "format": "json", "limit": 50,
                 "filters[commodity]": commodity, "filters[state]": state,
             },
-            timeout=10,
+            timeout=4,
         )
         r.raise_for_status()
         # field-name casing differs between API versions, so lower-case the keys
@@ -265,7 +266,9 @@ def _fetch_commodity(commodity: str, state: str) -> Optional[dict]:
                     "example_markets": [f"{x.get('market')} ({x.get('district')})" for x in records[:3]],
                 }
     except (requests.RequestException, ValueError) as exc:
-        log.warning("Mandi API failed for %s/%s: %s", commodity, state, exc)
+        global _mandi_down_until
+        _mandi_down_until = time.time() + 300
+        log.warning("Mandi API failed for %s/%s: %s (using fallback data for 5 min)", commodity, state, exc)
         return None  # failures are not cached
     with _price_lock:
         _price_cache[key] = (time.time(), result)
@@ -282,7 +285,7 @@ def get_market_prices(location: str, commodities: Optional[list[str]] = None) ->
     try:
         wanted = [COMMODITY_MAPPING.get(c.strip().lower(), c.strip().title()) for c in (commodities or DEFAULT_COMMODITIES)][:10]
         state = _resolve_state(location)
-        if DATA_GOV_API_KEY:
+        if DATA_GOV_API_KEY and time.time() >= _mandi_down_until:
             with ThreadPoolExecutor(max_workers=5) as pool:
                 rows = list(pool.map(lambda c: _fetch_commodity(c, state), wanted))
             live = [r for r in rows if r]
@@ -500,6 +503,19 @@ def is_farming_question(prior: list, text: str) -> bool:
     return True
 
 
+def _thinking_config():
+    """Less 'thinking' = faster answers. Set THINKING_LEVEL=DEFAULT on Render to let the model think more."""
+    level = _env("THINKING_LEVEL", "LOW").upper()
+    if level in ("", "DEFAULT"):
+        return None
+    try:
+        if GEMINI_MODEL.startswith(("gemini-2", "gemini-1")):
+            return types.ThinkingConfig(thinking_budget=0) if "flash" in GEMINI_MODEL else None
+        return types.ThinkingConfig(thinking_level=level)
+    except Exception:
+        return None
+
+
 def ask_gemini(history: list, location: Optional[str], image_jpeg: Optional[bytes], lang: str = "en") -> str:
     """Layer 2: the farming assistant, with its own scope rules, live-data tools and language preference."""
     msgs = list(history[-MAX_HISTORY_MESSAGES:])
@@ -525,20 +541,31 @@ def ask_gemini(history: list, location: Optional[str], image_jpeg: Optional[byte
     if location:
         system += f"\nUser's saved location: {location}"
 
-    cfg = types.GenerateContentConfig(
-        system_instruction=system,
-        tools=[get_weather, get_market_prices],  # the SDK runs these automatically when Gemini asks
-        automatic_function_calling=types.AutomaticFunctionCallingConfig(maximum_remote_calls=MAX_TOOL_ROUNDS),
-        max_output_tokens=MAX_OUTPUT_TOKENS,
-        **({"temperature": 0.4} if GEMINI_MODEL.startswith(("gemini-2", "gemini-1")) else {}),
-    )
+    thinking = _thinking_config()
+
+    def build(th):
+        return types.GenerateContentConfig(
+            system_instruction=system,
+            tools=[get_weather, get_market_prices],  # the SDK runs these automatically when Gemini asks
+            automatic_function_calling=types.AutomaticFunctionCallingConfig(maximum_remote_calls=MAX_TOOL_ROUNDS),
+            max_output_tokens=MAX_OUTPUT_TOKENS,
+            **({"thinking_config": th} if th is not None else {}),
+            **({"temperature": 0.4} if GEMINI_MODEL.startswith(("gemini-2", "gemini-1")) else {}),
+        )
+
+    cfg = build(thinking)
     for attempt in range(3):  # Google sometimes answers 503 "overloaded" for a second or two
         try:
             resp = _get_client().models.generate_content(model=GEMINI_MODEL, contents=contents, config=cfg)
             break
         except genai_errors.APIError as exc:
-            if getattr(exc, "code", None) in (500, 503, 504) and attempt < 2:
-                log.warning("Gemini temporary error %s, retrying", exc.code)
+            code = getattr(exc, "code", None)
+            if code == 400 and thinking is not None and "think" in str(exc).lower():
+                log.warning("Model rejected the thinking setting; continuing without it")
+                thinking, cfg = None, build(None)
+                continue
+            if code in (500, 503, 504) and attempt < 2:
+                log.warning("Gemini temporary error %s, retrying", code)
                 time.sleep(1.5 * (attempt + 1))
                 continue
             raise
@@ -661,10 +688,12 @@ def user_from_request(db, request: Request) -> Optional[User]:
     token = request.cookies.get(COOKIE_NAME)
     if not token:
         return None
-    row = db.get(SessionToken, hashlib.sha256(token.encode()).hexdigest())
-    if not row or row.expires_at < now():
-        return None
-    return db.get(User, row.user_id)
+    row = db.execute(  # one round trip instead of two
+        select(User, SessionToken.expires_at)
+        .join(SessionToken, SessionToken.user_id == User.id)
+        .where(SessionToken.token_hash == hashlib.sha256(token.encode()).hexdigest())
+    ).first()
+    return row[0] if row and row[1] >= now() else None
 
 
 def is_https(request: Request) -> bool:
@@ -986,6 +1015,7 @@ def app_page(user, convs: list, msgs: list, cid: str, error: str = "", prefill: 
 # 10. ROUTES
 # =====================================================================
 app = FastAPI(title="Agri Sense", version="4.0.0", docs_url=None, redoc_url=None, openapi_url=None)
+_ai_pool = ThreadPoolExecutor(max_workers=8)  # runs the scope check and the answer in parallel
 
 # No scripts at all, forms may only post to this same site, nothing can frame the page.
 CSP = (
@@ -1125,15 +1155,19 @@ def chat(
     if not same_origin(request):
         return HTMLResponse("Forbidden", status_code=403)
 
+    t0 = time.perf_counter()
+
     # --- who is this, and what has been said so far in this chat? ---
     with SessionLocal() as db:
         user = user_from_request(db, request)
         if not user:
             return RedirectResponse("/login", status_code=303)
-        if lang in LANGS:
-            user.lang = lang
-        user.location = location.strip()[:80]
-        db.commit()
+        new_loc = location.strip()[:80]
+        if (lang in LANGS and user.lang != lang) or user.location != new_loc:  # only write when something changed
+            if lang in LANGS:
+                user.lang = lang
+            user.location = new_loc
+            db.commit()
         uid, ulang, uloc = user.id, user.lang, user.location
         conv = db.get(Conversation, cid) if cid else None
         if conv and conv.user_id != uid:
@@ -1143,8 +1177,11 @@ def chat(
             conv_id = conv.id
             rows = db.scalars(select(Message).where(Message.conversation_id == conv_id).order_by(Message.id.desc()).limit(MAX_HISTORY_MESSAGES)).all()
             prior = [{"role": m.role, "content": m.content} for m in reversed(rows)]
-            n_msgs = db.scalar(select(func.count()).select_from(Message).where(Message.conversation_id == conv_id)) or 0
+            n_msgs = len(prior)
+            if n_msgs >= MAX_HISTORY_MESSAGES:  # only then is the full count not already known
+                n_msgs = db.scalar(select(func.count()).select_from(Message).where(Message.conversation_id == conv_id)) or 0
 
+    t_load = time.perf_counter() - t0
     text = (topic or message).strip()[:MAX_MESSAGE_CHARS]
 
     def fail(key: str, status: int, tag: str = ""):
@@ -1172,12 +1209,17 @@ def chat(
     if not GEMINI_API_KEY:
         return fail("e_config", 503)
 
-    # --- answer: layer 1 (scope guard) then layer 2 (farming assistant) ---
+    # --- answer: layer 1 (scope guard) and layer 2 (farming assistant) run AT THE SAME TIME ---
+    # If the guard says NO we return the fixed refusal and ignore the answer, so the user never waits for both in a row.
+    t1 = time.perf_counter()
     try:
-        if not image and not is_farming_question(prior, text):
-            reply = tr("refuse", ulang)
+        convo = prior + [{"role": "user", "content": text}]
+        if image:  # photos skip the text-only guard
+            reply = ask_gemini(convo, uloc or None, image, ulang)
         else:
-            reply = ask_gemini(prior + [{"role": "user", "content": text}], uloc or None, image, ulang)
+            fut_guard = _ai_pool.submit(is_farming_question, prior, text)
+            fut_answer = _ai_pool.submit(ask_gemini, convo, uloc or None, None, ulang)
+            reply = fut_answer.result() if fut_guard.result() else tr("refuse", ulang)
     except genai_errors.APIError as exc:
         log.error("Gemini API error %s: %s", getattr(exc, "code", "?"), exc)
         code = getattr(exc, "code", None)
@@ -1187,20 +1229,24 @@ def chat(
         log.exception("Unexpected chat failure")
         return fail("e_server", 500)
 
+    t_ai = time.perf_counter() - t1
+
     # --- save the exchange, then redirect so a page refresh never re-sends it ---
+    t2 = time.perf_counter()
     with SessionLocal() as db:
-        conv = db.get(Conversation, conv_id) if conv_id else None
-        if not conv:
-            conv = Conversation(id=uuid.uuid4().hex, user_id=uid, title=" ".join(text.split())[:60], created_at=now(), updated_at=now())
-            db.add(conv)
+        new_id = conv_id
+        if not new_id:
+            new_id = uuid.uuid4().hex
+            db.add(Conversation(id=new_id, user_id=uid, title=" ".join(text.split())[:60], created_at=now(), updated_at=now()))
             db.flush()
-        db.add(Message(conversation_id=conv.id, role="user", content=text, has_photo=bool(image), created_at=now()))
+            trim_conversations(db, uid)  # only needed when a chat is added
+        else:
+            db.execute(update(Conversation).where(Conversation.id == new_id).values(updated_at=now()))  # ownership checked above
+        db.add(Message(conversation_id=new_id, role="user", content=text, has_photo=bool(image), created_at=now()))
         db.flush()
-        db.add(Message(conversation_id=conv.id, role="assistant", content=reply, has_photo=False, created_at=now()))
-        conv.updated_at = now()
-        trim_conversations(db, uid)
+        db.add(Message(conversation_id=new_id, role="assistant", content=reply, has_photo=False, created_at=now()))
         db.commit()
-        new_id = conv.id
+    log.info("chat timing: db_load=%.2fs ai=%.2fs db_save=%.2fs total=%.2fs", t_load, t_ai, time.perf_counter() - t2, time.perf_counter() - t0)
     return RedirectResponse(f"/app?c={new_id}", status_code=303)
 
 
