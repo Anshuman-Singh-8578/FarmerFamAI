@@ -1,5 +1,7 @@
 services:
   - type: web
+    # Keep this equal to the service name shown in your Render dashboard. Changing it here makes Render
+    # create a NEW service (new URL) instead of renaming the existing one. Rename in the dashboard instead.
     name: agrisense-backend
     runtime: python
     rootDir: backend
@@ -17,10 +19,14 @@ services:
       - key: DATA_GOV_API_KEY
         sync: false
       - key: GEMINI_MODEL
-        value: gemini-2.5-flash
+        value: gemini-3.5-flash-lite
       - key: FRONTEND_URL
         sync: false
       - key: DATABASE_URL
+        sync: false
+      - key: OPERATOR_NAME
+        sync: false
+      - key: CONTACT_EMAIL
         sync: false
       - key: RATE_LIMIT_PER_MINUTE
         value: "20"

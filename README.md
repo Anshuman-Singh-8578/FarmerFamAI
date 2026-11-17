@@ -1,4 +1,4 @@
-# Agri Sense – AI farming assistant (Gemini, login, saved chats, 10 languages)
+# FarmerFamAI: AI farming assistant (Gemini, login, saved chats, 10 languages)
 
 ```
 backend/main.py                   <- the entire backend (FastAPI + Google GenAI + database), deploy on Render
@@ -29,7 +29,7 @@ It runs 16 off-topic prompts (code, trivia, politics, jailbreaks, Hindi/Tamil of
 ```bash
 uvicorn main:app --reload --port 8000     # open http://localhost:8000
 ```
-With `DATABASE_URL` empty, accounts and chats go into a local file `backend/agrisense.db`.
+With `DATABASE_URL` empty, accounts and chats go into a local file `backend/farmerfamai.db`.
 
 ## 3) Deploy
 1. **Free Postgres** (needed because Render's free disk is erased on every restart): create a project on **neon.tech** or **supabase.com** and copy the connection string (`postgresql://…`).
@@ -50,3 +50,21 @@ scrypt password hashes; random server-side sessions (HttpOnly, SameSite=Lax, Sec
 - The login page's language switch needs a 2023+ browser (`:has()`); older ones show English, and the language dropdown still sets the account language at sign-up.
 - Returning users keep the language saved on their account (the dropdown on the login page only matters at sign-up).
 - First request after Render's free tier sleeps takes ~1 minute (a free uptime pinger on `/api/health` avoids it).
+
+## Speed
+What happens when you send a message: the scope check and the answer now run **at the same time** (an off-topic question is refused in about a second), database round trips are cut to about 7, the Government price API has a 4 s timeout and is skipped for 5 minutes after a failure, and the model's "thinking" is set to LOW. Render's logs show a line like `chat timing: db_load=0.40s ai=2.10s db_save=0.30s total=2.80s` for every message, so you can see which part is slow.
+
+The biggest remaining causes are not in the code:
+1. **Render free tier sleeps** after ~15 min idle; the first request then takes ~1 minute. Keep it awake with a free uptime pinger (e.g. UptimeRobot, HTTP monitor, every 5 min) on `https://<render-url>/api/health`, or use a paid plan.
+2. **Put Render and Supabase in the same region** (e.g. both in Singapore/Mumbai-nearby). Every database query is a network trip; across continents each one costs 0.2-0.3 s.
+3. **THINKING_LEVEL** (Render env var): `LOW` (default) is fastest; `MEDIUM`/`HIGH`/`DEFAULT` give deeper but slower answers.
+4. A smaller/faster model (`GEMINI_MODEL`) answers quicker, a bigger one answers better.
+
+## Legal pages and account deletion
+- `/privacy` (Privacy Policy) and `/terms` (Terms and Conditions) are served by the backend and linked from the login page, the sign-up form and the app sidebar. They are written in English only and describe what this code actually does (what is stored, which providers receive data, how long chats are kept, the cookie).
+- **Set `OPERATOR_NAME` and `CONTACT_EMAIL` on Render.** Until you do, the pages read correctly but show no operator name or contact address. `/api/health` shows `legal_pages_contact_configured`.
+- **Have a lawyer review both pages** before you rely on them, and keep them in sync if you change providers (Render, Supabase, Netlify, Google, OpenWeatherMap) or what the app stores. The "Last updated" date is `LEGAL_UPDATED` in `main.py`.
+- Users can delete a single chat, or their whole account (password required), from the sidebar. Deleting the account removes the user, sessions, chats and messages from the database.
+
+## Look and feel
+System fonts only (no Google Fonts or other third-party requests), one accent colour, 4px corners, no images, no animation except the mobile menu sliding in (turned off for users who ask for reduced motion). Replies from the assistant have emoji and em dashes removed before they are shown.
