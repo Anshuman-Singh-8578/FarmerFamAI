@@ -1,98 +1,121 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Agri Sense</title><link rel="icon" href="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text y=%22.9em%22 font-size=%2290%22&gt;🌾&lt;/text&gt;&lt;/svg&gt;"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Hind:wght@400;500;600&family=Noto+Sans+Bengali:wght@400;600&family=Noto+Sans+Tamil:wght@400;600&family=Noto+Sans+Telugu:wght@400;600&family=Noto+Sans+Gujarati:wght@400;600&family=Noto+Sans+Kannada:wght@400;600&family=Noto+Sans+Malayalam:wght@400;600&family=Noto+Sans+Gurmukhi:wght@400;600&display=swap" rel="stylesheet"><style>
-:root{--ground:#eef2e9;--paper:#fbfcf8;--ink:#1c2b21;--ink-soft:#55645a;--canopy:#2d6a3e;--canopy-deep:#1f4d2c;--marigold:#f4b400;--marigold-ink:#3a2a00;--side:#f1f5ec;--line:#cfd8c8;--danger:#a4361f;--radius:14px;color-scheme:light}
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>FarmerFamAI</title><link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2232%22%20height%3D%2232%22%20viewBox%3D%220%200%2032%2032%22%20aria-hidden%3D%22true%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%224%22%20fill%3D%22%231d5c38%22%2F%3E%3Cpath%20d%3D%22M11%2025V7h11M11%2015h8%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%223%22%2F%3E%3C%2Fsvg%3E"><style>
+:root{--bg:#fff;--subtle:#f5f6f3;--hover:#e9ece6;--text:#1b211d;--muted:#59615c;--border:#d3d8d0;--accent:#1d5c38;--accent-hover:#154a2c;--user:#e6eee8;--danger:#a3261a;--danger-bg:#fcefed;--info-bg:#eaf2ec;--radius:4px;color-scheme:light}
 *{box-sizing:border-box}
 html,body{height:100%}
-body{margin:0;background:var(--ground);color:var(--ink);font-family:"Hind","Noto Sans Bengali","Noto Sans Tamil","Noto Sans Telugu","Noto Sans Gujarati","Noto Sans Kannada","Noto Sans Malayalam","Noto Sans Gurmukhi",system-ui,sans-serif;font-size:17px;line-height:1.55}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans","Nirmala UI","Noto Sans Devanagari","Noto Sans Bengali","Noto Sans Tamil","Noto Sans Telugu","Noto Sans Gujarati","Noto Sans Kannada","Noto Sans Malayalam","Noto Sans Gurmukhi",sans-serif;font-size:17px;line-height:1.6;-webkit-text-size-adjust:100%}
+a{color:var(--accent)}
+code{font-family:ui-monospace,Consolas,monospace;font-size:.92em;background:var(--subtle);padding:1px 5px;border-radius:var(--radius)}
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;padding:0}
-:focus-visible{outline:3px solid var(--marigold);outline-offset:2px}
-.top :focus-visible{outline-color:#fff}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.muted{color:var(--muted)}
+.small{font-size:15px}
 
-.top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:var(--canopy-deep);color:#f2f7ee}
-.brand{display:flex;align-items:center;gap:10px;min-width:0}
-.brand-mark{font-size:24px}
-.brand-name{font-family:"Bricolage Grotesque","Hind",sans-serif;font-weight:800;font-size:22px;letter-spacing:-.01em;white-space:nowrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:9px 18px;line-height:1.3;font:inherit;font-weight:600;text-align:center;text-decoration:none;color:#fff;background:var(--accent);border:1px solid var(--accent);border-radius:var(--radius);cursor:pointer}
+.btn:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+.btn.secondary{color:var(--accent);background:#fff}
+.btn.secondary:hover{background:var(--subtle)}
+.btn.danger{background:var(--danger);border-color:var(--danger)}
+.btn.danger:hover{background:#861e14;border-color:#861e14}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;background:var(--bg);border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:10px;min-width:0;color:var(--text);font-weight:700;font-size:19px;text-decoration:none;white-space:nowrap}
+.brand svg{display:block;flex:none}
 .top-actions{display:flex;align-items:center;gap:8px;min-width:0}
-.burger{display:none;width:40px;height:40px;place-items:center;font-size:22px;border-radius:10px;cursor:pointer;color:#fff;border:1.5px solid rgba(255,255,255,.35);flex:none}
-.loc,.langsel{font:inherit;font-size:15px;padding:6px 12px;border-radius:999px;border:1.5px solid var(--marigold);background:rgba(255,255,255,.08);color:#fff;min-width:0}
-.loc{width:140px}
-.loc::placeholder{color:rgba(255,255,255,.7)}
-.loc:focus{outline:none;background:rgba(255,255,255,.18)}
-.langsel option{color:#1c2b21;background:#fff}
+.ctl{font:inherit;font-size:15px;height:38px;padding:0 10px;min-width:0;color:var(--text);background:#fff;border:1px solid var(--border);border-radius:var(--radius)}
+.ctl::placeholder{color:#6b736d}
+.loc{width:150px}
+.burger{display:none;width:40px;height:40px;flex:none;place-items:center;color:var(--text);background:#fff;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer}
 
-/* ---------- app layout: sidebar + chat ---------- */
-.shell{display:grid;grid-template-columns:272px minmax(0,1fr);height:100%;max-width:1120px;margin:0 auto;background:var(--paper);border-inline:1px solid var(--line)}
-.side{display:flex;flex-direction:column;gap:6px;background:var(--side);border-right:1px solid var(--line);padding:14px 12px;overflow-y:auto;min-height:0}
-.side .new{display:block;text-align:center;font-weight:600;padding:10px;border-radius:var(--radius);background:var(--canopy);color:#fff;text-decoration:none}
-.side .new:hover{background:var(--canopy-deep)}
-.sidehead{margin:14px 6px 4px;font-size:13px;font-weight:600;color:var(--ink-soft);letter-spacing:.04em}
+/* ---------- signed-in app: sidebar + conversation ---------- */
+.shell{display:grid;grid-template-columns:280px minmax(0,1fr);height:100%;max-width:1200px;margin:0 auto;border-inline:1px solid var(--border)}
+.side{display:flex;flex-direction:column;gap:6px;min-height:0;padding:14px 12px;overflow-y:auto;background:var(--subtle);border-right:1px solid var(--border)}
+.side .btn{width:100%}
+.sidehead{margin:14px 6px 4px;font-size:14px;font-weight:600;color:var(--muted)}
 .side nav{display:flex;flex-direction:column;gap:2px;flex:1}
-.side nav a{display:block;padding:8px 10px;border-radius:10px;color:var(--ink);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.side nav a:hover{background:rgba(45,106,62,.1)}
-.side nav a.cur{background:rgba(45,106,62,.16);font-weight:600}
-.empty{margin:6px;color:var(--ink-soft);font-size:15px}
-.sidefoot{display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--line);padding-top:10px}
-.linkbtn{font:inherit;font-size:15px;text-align:left;width:100%;padding:8px 10px;background:none;border:0;border-radius:10px;color:var(--ink-soft);cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.linkbtn:hover{background:rgba(0,0,0,.05);color:var(--ink)}
+.side nav a{display:block;padding:8px 10px;overflow:hidden;color:var(--text);text-decoration:none;text-overflow:ellipsis;white-space:nowrap;border-radius:var(--radius)}
+.side nav a:hover{background:var(--hover)}
+.side nav a.cur{background:#dde3d9;font-weight:600}
+.empty{margin:6px;color:var(--muted);font-size:15px}
+.sidefoot{display:flex;flex-direction:column;gap:2px;padding-top:10px;border-top:1px solid var(--border)}
+.linkbtn{display:block;width:100%;padding:8px 10px;overflow:hidden;font:inherit;font-size:15px;color:var(--muted);text-align:left;text-decoration:none;text-overflow:ellipsis;white-space:nowrap;background:none;border:0;border-radius:var(--radius);cursor:pointer}
+.linkbtn:hover{color:var(--text);background:var(--hover)}
 .linkbtn.danger{color:var(--danger)}
+.legal{display:flex;flex-wrap:wrap;margin-top:4px}
+.legal .linkbtn{width:auto;padding:4px 10px;font-size:14px}
 .scrim{display:none}
 .app{display:flex;flex-direction:column;min-width:0;min-height:0;height:100%;padding-top:env(safe-area-inset-top,0px)}
 
-.chat{flex:1;overflow-y:auto;padding:22px 18px 8px}
+.chat{flex:1;overflow-y:auto;padding:24px 20px 8px}
 .chat.follow{display:flex;flex-direction:column-reverse} /* CSS-only: stay scrolled to the newest message */
-.welcome h1,.authmain h1{font-family:"Bricolage Grotesque","Hind",sans-serif;font-weight:800;font-size:clamp(26px,5vw,38px);line-height:1.15;letter-spacing:-.02em;margin:8px 0 14px;color:var(--canopy-deep)}
-.topics{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
-.topics li{border-bottom:1px solid var(--line)}
-.topics button{width:100%;text-align:left;font:inherit;font-weight:500;padding:14px 4px;background:none;border:0;color:var(--ink);cursor:pointer}
-.topics button:hover{color:var(--canopy);background:rgba(45,106,62,.06)}
+.thread{display:flex;flex-direction:column;gap:20px;width:100%;max-width:760px;margin:0 auto;padding-bottom:12px}
+.welcome h2{margin:4px 0 14px;font-size:20px;line-height:1.3}
+.topics{margin:0;padding:0;list-style:none;border-top:1px solid var(--border)}
+.topics li{border-bottom:1px solid var(--border)}
+.topics button{display:block;width:100%;padding:13px 6px;font:inherit;color:var(--text);text-align:left;background:none;border:0;cursor:pointer}
+.topics button:hover{color:var(--accent);background:var(--subtle)}
+.welcome .note{margin:16px 0 0;max-width:62ch}
 
-.thread{display:flex;flex-direction:column;gap:18px;padding-bottom:12px}
-.msg{max-width:92%}
-.msg.user{align-self:flex-end;background:var(--marigold);color:var(--marigold-ink);padding:10px 14px;border-radius:var(--radius) var(--radius) 4px var(--radius);white-space:pre-wrap;overflow-wrap:anywhere}
-.photo-tag{display:block;font-size:14px;font-weight:600;margin-bottom:4px}
-.msg.bot{align-self:flex-start;border-left:3px solid var(--canopy);padding:2px 0 2px 14px;overflow-wrap:anywhere}
-.msg.bot.error{border-left-color:var(--danger);color:var(--danger)}
+.msg{overflow-wrap:anywhere}
+.msg.user{align-self:flex-end;max-width:85%;padding:10px 14px;white-space:pre-wrap;background:var(--user);border-radius:var(--radius)}
+.msg.bot{align-self:flex-start;max-width:100%}
+.msg.bot.error{padding:10px 14px;color:var(--danger);background:var(--danger-bg);border-radius:var(--radius)}
+.photo-tag{display:block;margin-bottom:4px;font-size:14px;font-weight:600;color:var(--muted)}
 .msg.bot p{margin:0 0 10px}
 .msg.bot p:last-child,.msg.bot ul:last-child,.msg.bot ol:last-child{margin-bottom:0}
 .msg.bot ul,.msg.bot ol{margin:0 0 10px;padding-left:22px}
 .msg.bot li{margin-bottom:4px}
-.msg.bot h4{font-family:"Bricolage Grotesque","Hind",sans-serif;font-size:18px;margin:12px 0 6px;color:var(--canopy-deep)}
-.msg.bot code{background:#e6ecde;padding:1px 5px;border-radius:4px;font-size:.92em}
+.msg.bot h4{margin:12px 0 6px;font-size:17px}
 
-.composer{padding:10px 14px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--paper)}
-.photo-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:15px;color:var(--ink-soft);flex-wrap:wrap}
-.photo-row input[type=file]{font:inherit;font-size:14px;color:var(--ink-soft);min-width:0;max-width:100%}
-.photo-row input[type=file]::file-selector-button{font:inherit;font-weight:500;margin-right:10px;padding:6px 12px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--canopy-deep);cursor:pointer}
+.composer{padding:12px 20px calc(14px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--border);background:var(--bg)}
+.composer-in{max-width:760px;margin:0 auto}
+.photo-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:8px;font-size:15px;color:var(--muted)}
+.photo-row input[type=file]{min-width:0;max-width:100%;font:inherit;font-size:14px;color:var(--muted)}
+.photo-row input[type=file]::file-selector-button{margin-right:10px;padding:6px 12px;font:inherit;color:var(--text);background:#fff;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer}
 .send-row{display:flex;gap:8px}
-.send-row input[type=text]{flex:1;min-width:0;font:inherit;padding:10px 14px;height:46px;border:1.5px solid var(--line);border-radius:var(--radius);background:#fff;color:var(--ink)}
-.send-row input[type=text]:focus,.field input:focus{outline:none;border-color:var(--canopy)}
-.send,.ghost{height:46px;padding:0 22px;flex:none;font:inherit;font-weight:600;border-radius:var(--radius);cursor:pointer}
-.send{background:var(--canopy);color:#fff;border:0}
-.send:hover{background:var(--canopy-deep)}
-.ghost{background:#fff;color:var(--canopy-deep);border:1.5px solid var(--canopy)}
-.ghost:hover{background:rgba(45,106,62,.08)}
+.send-row .text{flex:1;min-width:0;height:44px;padding:0 12px;font:inherit;color:var(--text);background:#fff;border:1px solid var(--border);border-radius:var(--radius)}
 
 /* ---------- login page ---------- */
-.auth{display:flex;flex-direction:column;max-width:520px;min-height:100%;margin:0 auto;background:var(--paper);border-inline:1px solid var(--line)}
-.authmain{flex:1;padding:26px 22px 34px}
-.sub{margin:0 0 22px;color:var(--ink-soft)}
+.auth{display:flex;flex-direction:column;min-height:100%}
+.authgrid{display:grid;flex:1;grid-template-columns:minmax(0,1fr) minmax(0,420px);gap:56px;align-items:start;width:100%;max-width:980px;margin:0 auto;padding:56px 20px}
+.intro h1{margin:0 0 16px;font-size:34px;line-height:1.2}
+.intro p{max-width:52ch;margin:0 0 14px}
+.formbox{padding:24px;background:#fff;border:1px solid var(--border);border-radius:var(--radius)}
 .field{display:block;margin:0 0 16px}
-.field .lbl{display:block;font-weight:600;margin-bottom:6px}
-.field input{width:100%;font:inherit;padding:11px 14px;height:48px;border:1.5px solid var(--line);border-radius:var(--radius);background:#fff;color:var(--ink)}
-.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
-.btns .send,.btns .ghost{flex:1 1 160px}
-.note{margin:18px 0 0;color:var(--ink-soft);font-size:15px}
-.alert{margin:0 0 16px;padding:10px 14px;border-left:3px solid var(--danger);background:#fbeceb;color:var(--danger);border-radius:0 10px 10px 0}
+.field .lbl{display:block;margin-bottom:6px;font-weight:600}
+.field input{width:100%;height:44px;padding:0 12px;font:inherit;color:var(--text);background:#fff;border:1px solid var(--border);border-radius:var(--radius)}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+.btns .btn{flex:1 1 150px}
+.agree{margin:16px 0 0;font-size:15px;color:var(--muted)}
+.alert,.info{margin:0 0 16px;padding:10px 14px;border-radius:var(--radius)}
+.alert{color:var(--danger);background:var(--danger-bg)}
+.info{color:var(--accent);background:var(--info-bg)}
+.foot{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 24px;padding:16px 20px;font-size:15px;border-top:1px solid var(--border)}
+.foot a{color:var(--muted)}
 
+/* ---------- document pages (privacy, terms, delete account) ---------- */
+.docpage{display:flex;flex-direction:column;min-height:100%}
+.doc{flex:1;width:100%;max-width:760px;margin:0 auto;padding:40px 20px 56px}
+.doc.narrow{max-width:520px}
+.doc h1{margin:0 0 8px;font-size:30px;line-height:1.25}
+.doc h2{margin:32px 0 8px;font-size:20px;line-height:1.3}
+.doc p,.doc li{max-width:68ch}
+.doc ul{padding-left:22px}
+.doc li{margin-bottom:6px}
+
+@media (max-width:860px){
+  .authgrid{grid-template-columns:minmax(0,1fr);gap:28px;padding:32px 16px}
+  .intro h1{font-size:28px}
+}
 @media (max-width:820px){
   .shell{grid-template-columns:minmax(0,1fr);border-inline:0}
   .burger{display:grid}
-  .side{position:fixed;inset:0 auto 0 0;width:min(300px,84vw);transform:translateX(-102%);transition:transform .2s;z-index:20;box-shadow:4px 0 24px rgba(0,0,0,.18)}
+  .side{position:fixed;inset:0 auto 0 0;z-index:20;width:min(300px,84vw);transform:translateX(-101%);transition:transform .15s}
   #menu:checked ~ .shell .side{transform:none}
-  #menu:checked ~ .shell .scrim{display:block;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:10}
-  .loc{width:104px}
-  .brand-name{display:none}
+  #menu:checked ~ .shell .scrim{display:block;position:fixed;inset:0;z-index:10;background:rgba(0,0,0,.4)}
+  .loc{width:110px}
+  .brand span{display:none}
 }
-@media (max-width:520px){body{font-size:16px}.auth{border-inline:0}}
+@media (max-width:520px){body{font-size:16px}.chat{padding:16px 14px 8px}.composer{padding-inline:14px}}
 @media (prefers-reduced-motion:reduce){.side{transition:none}}
 .t{display:none}.t[lang=en]{display:inline}.auth:has(select option[value="hi"]:checked) .t{display:none}.auth:has(select option[value="hi"]:checked) .t[lang="hi"]{display:inline}.auth:has(select option[value="bn"]:checked) .t{display:none}.auth:has(select option[value="bn"]:checked) .t[lang="bn"]{display:inline}.auth:has(select option[value="mr"]:checked) .t{display:none}.auth:has(select option[value="mr"]:checked) .t[lang="mr"]{display:inline}.auth:has(select option[value="ta"]:checked) .t{display:none}.auth:has(select option[value="ta"]:checked) .t[lang="ta"]{display:inline}.auth:has(select option[value="te"]:checked) .t{display:none}.auth:has(select option[value="te"]:checked) .t[lang="te"]{display:inline}.auth:has(select option[value="gu"]:checked) .t{display:none}.auth:has(select option[value="gu"]:checked) .t[lang="gu"]{display:inline}.auth:has(select option[value="kn"]:checked) .t{display:none}.auth:has(select option[value="kn"]:checked) .t[lang="kn"]{display:inline}.auth:has(select option[value="ml"]:checked) .t{display:none}.auth:has(select option[value="ml"]:checked) .t[lang="ml"]{display:inline}.auth:has(select option[value="pa"]:checked) .t{display:none}.auth:has(select option[value="pa"]:checked) .t[lang="pa"]{display:inline}</style></head><!--
   NO JAVASCRIPT. This login form posts to your Render backend, which signs you in and shows the chat there.
@@ -103,20 +126,27 @@ body{margin:0;background:var(--ground);color:var(--ink);font-family:"Hind","Noto
 <form class="auth" method="post" action="https://agrisense-backend-jagn.onrender.com/login">
   <button class="vh" type="submit" tabindex="-1" aria-hidden="true"></button>
   <header class="top">
-    <div class="brand"><span class="brand-mark" aria-hidden="true">🌾</span><span class="brand-name">Agri Sense</span></div>
-    <label class="top-actions"><span class="vh"><span class="t" lang="en">Language</span><span class="t" lang="hi">भाषा</span><span class="t" lang="bn">ভাষা</span><span class="t" lang="mr">भाषा</span><span class="t" lang="ta">மொழி</span><span class="t" lang="te">భాష</span><span class="t" lang="gu">ભાષા</span><span class="t" lang="kn">ಭಾಷೆ</span><span class="t" lang="ml">ഭാഷ</span><span class="t" lang="pa">ਭਾਸ਼ਾ</span></span><select class="langsel" name="lang"><option value="en" selected>English</option><option value="hi">हिन्दी</option><option value="bn">বাংলা</option><option value="mr">मराठी</option><option value="ta">தமிழ்</option><option value="te">తెలుగు</option><option value="gu">ગુજરાતી</option><option value="kn">ಕನ್ನಡ</option><option value="ml">മലയാളം</option><option value="pa">ਪੰਜਾਬੀ</option></select></label>
+    <span class="brand"><svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="4" fill="#1d5c38"/><path d="M11 25V7h11M11 15h8" fill="none" stroke="#fff" stroke-width="3"/></svg><span>FarmerFamAI</span></span>
+    <label class="top-actions"><span class="vh"><span class="t" lang="en">Language</span><span class="t" lang="hi">भाषा</span><span class="t" lang="bn">ভাষা</span><span class="t" lang="mr">भाषा</span><span class="t" lang="ta">மொழி</span><span class="t" lang="te">భాష</span><span class="t" lang="gu">ભાષા</span><span class="t" lang="kn">ಭಾಷೆ</span><span class="t" lang="ml">ഭാഷ</span><span class="t" lang="pa">ਭਾਸ਼ਾ</span></span><select class="ctl" name="lang"><option value="en" selected>English</option><option value="hi">हिन्दी</option><option value="bn">বাংলা</option><option value="mr">मराठी</option><option value="ta">தமிழ்</option><option value="te">తెలుగు</option><option value="gu">ગુજરાતી</option><option value="kn">ಕನ್ನಡ</option><option value="ml">മലയാളം</option><option value="pa">ਪੰਜਾਬੀ</option></select></label>
   </header>
-  <main class="authmain">
-    <h1><span class="t" lang="en">What&#x27;s happening on your farm today?</span><span class="t" lang="hi">आज आपके खेत में क्या हो रहा है?</span><span class="t" lang="bn">আজ আপনার খামারে কী হচ্ছে?</span><span class="t" lang="mr">आज तुमच्या शेतात काय चाललंय?</span><span class="t" lang="ta">இன்று உங்கள் பண்ணையில் என்ன நடக்கிறது?</span><span class="t" lang="te">ఈ రోజు మీ పొలంలో ఏం జరుగుతోంది?</span><span class="t" lang="gu">આજે તમારા ખેતરમાં શું ચાલી રહ્યું છે?</span><span class="t" lang="kn">ಇಂದು ನಿಮ್ಮ ಹೊಲದಲ್ಲಿ ಏನು ನಡೆಯುತ್ತಿದೆ?</span><span class="t" lang="ml">ഇന്ന് നിങ്ങളുടെ കൃഷിയിടത്തിൽ എന്താണ് നടക്കുന്നത്?</span><span class="t" lang="pa">ਅੱਜ ਤੁਹਾਡੇ ਖੇਤ ਵਿੱਚ ਕੀ ਹੋ ਰਿਹਾ ਹੈ?</span></h1>
-    <p class="sub"><span class="t" lang="en">Ask in your own language. You can also send a photo of a sick leaf.</span><span class="t" lang="hi">अपनी भाषा में पूछिए। आप बीमार पत्ते की फोटो भी भेज सकते हैं।</span><span class="t" lang="bn">আপনার নিজের ভাষায় জিজ্ঞাসা করুন। অসুস্থ পাতার ছবিও পাঠাতে পারেন।</span><span class="t" lang="mr">तुमच्या भाषेत विचारा. आजारी पानाचा फोटोही पाठवू शकता.</span><span class="t" lang="ta">உங்கள் மொழியிலேயே கேளுங்கள். நோய் பாதித்த இலையின் புகைப்படத்தையும் அனுப்பலாம்.</span><span class="t" lang="te">మీ భాషలోనే అడగండి. జబ్బుపడిన ఆకు ఫొటోను కూడా పంపవచ్చు.</span><span class="t" lang="gu">તમારી ભાષામાં પૂછો. બીમાર પાંદડાનો ફોટો પણ મોકલી શકો છો.</span><span class="t" lang="kn">ನಿಮ್ಮ ಭಾಷೆಯಲ್ಲೇ ಕೇಳಿ. ರೋಗಪೀಡಿತ ಎಲೆಯ ಫೋಟೋವನ್ನೂ ಕಳುಹಿಸಬಹುದು.</span><span class="t" lang="ml">നിങ്ങളുടെ ഭാഷയിൽ ചോദിക്കൂ. രോഗം ബാധിച്ച ഇലയുടെ ഫോട്ടോയും അയയ്ക്കാം.</span><span class="t" lang="pa">ਆਪਣੀ ਭਾਸ਼ਾ ਵਿੱਚ ਪੁੱਛੋ। ਬਿਮਾਰ ਪੱਤੇ ਦੀ ਫੋਟੋ ਵੀ ਭੇਜ ਸਕਦੇ ਹੋ।</span></p>
-    
-    <label class="field"><span class="lbl"><span class="t" lang="en">Email</span><span class="t" lang="hi">ईमेल</span><span class="t" lang="bn">ইমেল</span><span class="t" lang="mr">ईमेल</span><span class="t" lang="ta">மின்னஞ்சல்</span><span class="t" lang="te">ఇమెయిల్</span><span class="t" lang="gu">ઈમેલ</span><span class="t" lang="kn">ಇಮೇಲ್</span><span class="t" lang="ml">ഇമെയിൽ</span><span class="t" lang="pa">ਈਮੇਲ</span></span><input type="email" name="email" value="" required maxlength="254" autocomplete="email" inputmode="email"></label>
-    <label class="field"><span class="lbl"><span class="t" lang="en">Password (at least 8 characters)</span><span class="t" lang="hi">पासवर्ड (कम से कम 8 अक्षर)</span><span class="t" lang="bn">পাসওয়ার্ড (কমপক্ষে ৮ অক্ষর)</span><span class="t" lang="mr">पासवर्ड (किमान 8 अक्षरे)</span><span class="t" lang="ta">கடவுச்சொல் (குறைந்தது 8 எழுத்துகள்)</span><span class="t" lang="te">పాస్‌వర్డ్ (కనీసం 8 అక్షరాలు)</span><span class="t" lang="gu">પાસવર્ડ (ઓછામાં ઓછા 8 અક્ષર)</span><span class="t" lang="kn">ಪಾಸ್‌ವರ್ಡ್ (ಕನಿಷ್ಠ 8 ಅಕ್ಷರಗಳು)</span><span class="t" lang="ml">പാസ്‌വേഡ് (കുറഞ്ഞത് 8 അക്ഷരങ്ങൾ)</span><span class="t" lang="pa">ਪਾਸਵਰਡ (ਘੱਟੋ-ਘੱਟ 8 ਅੱਖਰ)</span></span><input type="password" name="password" required minlength="8" maxlength="128" autocomplete="current-password"></label>
-    <div class="btns">
-      <button class="send" type="submit"><span class="t" lang="en">Sign in</span><span class="t" lang="hi">साइन इन करें</span><span class="t" lang="bn">সাইন ইন করুন</span><span class="t" lang="mr">साइन इन करा</span><span class="t" lang="ta">உள்நுழைய</span><span class="t" lang="te">సైన్ ఇన్</span><span class="t" lang="gu">સાઇન ઇન કરો</span><span class="t" lang="kn">ಸೈನ್ ಇನ್</span><span class="t" lang="ml">സൈൻ ഇൻ</span><span class="t" lang="pa">ਸਾਈਨ ਇਨ ਕਰੋ</span></button>
-      <button class="ghost" type="submit" formaction="https://agrisense-backend-jagn.onrender.com/register"><span class="t" lang="en">Create account</span><span class="t" lang="hi">खाता बनाएँ</span><span class="t" lang="bn">অ্যাকাউন্ট তৈরি করুন</span><span class="t" lang="mr">खाते उघडा</span><span class="t" lang="ta">கணக்கை உருவாக்கு</span><span class="t" lang="te">ఖాతా సృష్టించండి</span><span class="t" lang="gu">ખાતું બનાવો</span><span class="t" lang="kn">ಖಾತೆ ರಚಿಸಿ</span><span class="t" lang="ml">അക്കൗണ്ട് ഉണ്ടാക്കുക</span><span class="t" lang="pa">ਖਾਤਾ ਬਣਾਓ</span></button>
+  <main class="authgrid">
+    <section class="intro">
+      <h1><span class="t" lang="en">Farming help in 10 Indian languages</span><span class="t" lang="hi">10 भारतीय भाषाओं में खेती की मदद</span><span class="t" lang="bn">১০টি ভারতীয় ভাষায় চাষবাসের সহায়তা</span><span class="t" lang="mr">10 भारतीय भाषांमध्ये शेतीविषयक मदत</span><span class="t" lang="ta">10 இந்திய மொழிகளில் விவசாய உதவி</span><span class="t" lang="te">10 భారతీయ భాషల్లో వ్యవసాయ సహాయం</span><span class="t" lang="gu">10 ભારતીય ભાષાઓમાં ખેતીની મદદ</span><span class="t" lang="kn">10 ಭಾರತೀಯ ಭಾಷೆಗಳಲ್ಲಿ ಕೃಷಿ ಸಹಾಯ</span><span class="t" lang="ml">10 ഇന്ത്യൻ ഭാഷകളിൽ കൃഷി സഹായം</span><span class="t" lang="pa">10 ਭਾਰਤੀ ਭਾਸ਼ਾਵਾਂ ਵਿੱਚ ਖੇਤੀ ਸਹਾਇਤਾ</span></h1>
+      <p><span class="t" lang="en">Ask about crops, soil, pests and plant diseases, livestock, weather and mandi prices. Upload a photo of a leaf to check it for disease.</span><span class="t" lang="hi">फसल, मिट्टी, कीट और पौधों के रोग, पशुपालन, मौसम और मंडी भाव के बारे में पूछिए। बीमारी की जाँच के लिए पत्ते की फोटो अपलोड कर सकते हैं।</span><span class="t" lang="bn">ফসল, মাটি, পোকামাকড় ও গাছের রোগ, গবাদিপশু, আবহাওয়া এবং মান্ডির দাম সম্পর্কে জিজ্ঞাসা করুন। রোগ পরীক্ষার জন্য পাতার ছবি আপলোড করতে পারেন।</span><span class="t" lang="mr">पिके, माती, कीड व झाडांचे रोग, पशुपालन, हवामान आणि बाजारभाव याबद्दल विचारा. रोग तपासण्यासाठी पानाचा फोटो अपलोड करू शकता.</span><span class="t" lang="ta">பயிர்கள், மண், பூச்சிகள் மற்றும் செடி நோய்கள், கால்நடைகள், வானிலை, மண்டி விலை பற்றிக் கேளுங்கள். நோயைச் சரிபார்க்க இலையின் புகைப்படத்தைப் பதிவேற்றலாம்.</span><span class="t" lang="te">పంటలు, నేల, చీడపీడలు మరియు మొక్కల వ్యాధులు, పశుపోషణ, వాతావరణం, మండి ధరల గురించి అడగండి. వ్యాధిని పరిశీలించడానికి ఆకు ఫొటోను అప్‌లోడ్ చేయవచ్చు.</span><span class="t" lang="gu">પાક, જમીન, જીવાત અને છોડના રોગો, પશુપાલન, હવામાન અને બજારભાવ વિશે પૂછો. રોગ તપાસવા માટે પાંદડાનો ફોટો અપલોડ કરી શકો છો.</span><span class="t" lang="kn">ಬೆಳೆ, ಮಣ್ಣು, ಕೀಟ ಮತ್ತು ಸಸ್ಯ ರೋಗ, ಜಾನುವಾರು, ಹವಾಮಾನ, ಮಂಡಿ ಬೆಲೆಯ ಬಗ್ಗೆ ಕೇಳಿ. ರೋಗ ಪರಿಶೀಲಿಸಲು ಎಲೆಯ ಫೋಟೋ ಅಪ್‌ಲೋಡ್ ಮಾಡಬಹುದು.</span><span class="t" lang="ml">വിളകൾ, മണ്ണ്, കീടങ്ങളും ചെടി രോഗങ്ങളും, കന്നുകാലികൾ, കാലാവസ്ഥ, മണ്ടി വില എന്നിവയെക്കുറിച്ച് ചോദിക്കൂ. രോഗം പരിശോധിക്കാൻ ഇലയുടെ ഫോട്ടോ അപ്‌ലോഡ് ചെയ്യാം.</span><span class="t" lang="pa">ਫ਼ਸਲਾਂ, ਮਿੱਟੀ, ਕੀੜੇ ਅਤੇ ਪੌਦਿਆਂ ਦੇ ਰੋਗ, ਪਸ਼ੂ-ਪਾਲਣ, ਮੌਸਮ ਅਤੇ ਮੰਡੀ ਭਾਅ ਬਾਰੇ ਪੁੱਛੋ। ਬਿਮਾਰੀ ਦੀ ਜਾਂਚ ਲਈ ਪੱਤੇ ਦੀ ਫੋਟੋ ਅਪਲੋਡ ਕਰ ਸਕਦੇ ਹੋ।</span></p>
+      <p class="muted"><span class="t" lang="en">Only farming questions are answered. Answers are generated by AI and can be wrong. Check important decisions, especially pesticide use, with your local agriculture officer.</span><span class="t" lang="hi">सिर्फ़ खेती से जुड़े सवालों के जवाब दिए जाते हैं। जवाब AI से बनते हैं और गलत हो सकते हैं। ज़रूरी फ़ैसले, ख़ासकर कीटनाशक के इस्तेमाल से पहले, अपने स्थानीय कृषि अधिकारी से जाँच लें।</span><span class="t" lang="bn">শুধু চাষবাস সম্পর্কিত প্রশ্নের উত্তর দেওয়া হয়। উত্তর AI দিয়ে তৈরি এবং ভুল হতে পারে। গুরুত্বপূর্ণ সিদ্ধান্ত, বিশেষ করে কীটনাশক ব্যবহারের আগে, আপনার স্থানীয় কৃষি কর্মকর্তার সঙ্গে যাচাই করুন।</span><span class="t" lang="mr">फक्त शेतीविषयक प्रश्नांची उत्तरे दिली जातात. उत्तरे AI ने तयार केलेली असतात आणि चुकीची असू शकतात. महत्त्वाचे निर्णय, विशेषतः कीटकनाशक वापरण्यापूर्वी, तुमच्या स्थानिक कृषी अधिकाऱ्याकडे तपासा.</span><span class="t" lang="ta">விவசாயம் தொடர்பான கேள்விகளுக்கு மட்டுமே பதில் அளிக்கப்படும். பதில்கள் AI மூலம் உருவாக்கப்படுகின்றன, தவறாக இருக்கலாம். முக்கிய முடிவுகளை, குறிப்பாக பூச்சிக்கொல்லி பயன்பாட்டை, உங்கள் உள்ளூர் வேளாண் அலுவலரிடம் சரிபார்த்துக்கொள்ளுங்கள்.</span><span class="t" lang="te">వ్యవసాయ సంబంధిత ప్రశ్నలకు మాత్రమే సమాధానం ఇవ్వబడుతుంది. సమాధానాలను AI రూపొందిస్తుంది, అవి తప్పు కావచ్చు. ముఖ్యమైన నిర్ణయాలను, ముఖ్యంగా పురుగుమందుల వాడకాన్ని, మీ స్థానిక వ్యవసాయ అధికారితో సరిచూసుకోండి.</span><span class="t" lang="gu">ફક્ત ખેતી સંબંધિત પ્રશ્નોના જવાબ આપવામાં આવે છે. જવાબ AI દ્વારા બને છે અને ખોટા હોઈ શકે છે. મહત્વના નિર્ણયો, ખાસ કરીને જંતુનાશકના ઉપયોગ પહેલાં, તમારા સ્થાનિક કૃષિ અધિકારી પાસે ચકાસી લો.</span><span class="t" lang="kn">ಕೃಷಿಗೆ ಸಂಬಂಧಿಸಿದ ಪ್ರಶ್ನೆಗಳಿಗೆ ಮಾತ್ರ ಉತ್ತರಿಸಲಾಗುತ್ತದೆ. ಉತ್ತರಗಳನ್ನು AI ರಚಿಸುತ್ತದೆ ಮತ್ತು ಅವು ತಪ್ಪಾಗಿರಬಹುದು. ಮುಖ್ಯ ನಿರ್ಧಾರಗಳನ್ನು, ವಿಶೇಷವಾಗಿ ಕೀಟನಾಶಕ ಬಳಕೆಯನ್ನು, ನಿಮ್ಮ ಸ್ಥಳೀಯ ಕೃಷಿ ಅಧಿಕಾರಿಯ ಬಳಿ ಪರಿಶೀಲಿಸಿ.</span><span class="t" lang="ml">കൃഷി സംബന്ധമായ ചോദ്യങ്ങൾക്ക് മാത്രമേ ഉത്തരം നൽകൂ. ഉത്തരങ്ങൾ AI തയ്യാറാക്കുന്നതാണ്, അവ തെറ്റാകാം. പ്രധാന തീരുമാനങ്ങൾ, പ്രത്യേകിച്ച് കീടനാശിനി ഉപയോഗം, നിങ്ങളുടെ പ്രാദേശിക കൃഷി ഓഫീസറുമായി ഉറപ്പാക്കുക.</span><span class="t" lang="pa">ਸਿਰਫ਼ ਖੇਤੀ ਨਾਲ ਜੁੜੇ ਸਵਾਲਾਂ ਦੇ ਜਵਾਬ ਦਿੱਤੇ ਜਾਂਦੇ ਹਨ। ਜਵਾਬ AI ਵੱਲੋਂ ਬਣਦੇ ਹਨ ਅਤੇ ਗਲਤ ਹੋ ਸਕਦੇ ਹਨ। ਅਹਿਮ ਫ਼ੈਸਲੇ, ਖ਼ਾਸ ਕਰਕੇ ਕੀਟਨਾਸ਼ਕ ਦੀ ਵਰਤੋਂ, ਆਪਣੇ ਸਥਾਨਕ ਖੇਤੀ ਅਧਿਕਾਰੀ ਤੋਂ ਜਾਂਚ ਲਓ।</span></p>
+    </section>
+    <div class="formbox">
+      
+      <label class="field"><span class="lbl"><span class="t" lang="en">Email</span><span class="t" lang="hi">ईमेल</span><span class="t" lang="bn">ইমেল</span><span class="t" lang="mr">ईमेल</span><span class="t" lang="ta">மின்னஞ்சல்</span><span class="t" lang="te">ఇమెయిల్</span><span class="t" lang="gu">ઈમેલ</span><span class="t" lang="kn">ಇಮೇಲ್</span><span class="t" lang="ml">ഇമെയിൽ</span><span class="t" lang="pa">ਈਮੇਲ</span></span><input type="email" name="email" value="" required maxlength="254" autocomplete="email" inputmode="email"></label>
+      <label class="field"><span class="lbl"><span class="t" lang="en">Password (at least 8 characters)</span><span class="t" lang="hi">पासवर्ड (कम से कम 8 अक्षर)</span><span class="t" lang="bn">পাসওয়ার্ড (কমপক্ষে ৮ অক্ষর)</span><span class="t" lang="mr">पासवर्ड (किमान 8 अक्षरे)</span><span class="t" lang="ta">கடவுச்சொல் (குறைந்தது 8 எழுத்துகள்)</span><span class="t" lang="te">పాస్‌వర్డ్ (కనీసం 8 అక్షరాలు)</span><span class="t" lang="gu">પાસવર્ડ (ઓછામાં ઓછા 8 અક્ષર)</span><span class="t" lang="kn">ಪಾಸ್‌ವರ್ಡ್ (ಕನಿಷ್ಠ 8 ಅಕ್ಷರಗಳು)</span><span class="t" lang="ml">പാസ്‌വേഡ് (കുറഞ്ഞത് 8 അക്ഷരങ്ങൾ)</span><span class="t" lang="pa">ਪਾਸਵਰਡ (ਘੱਟੋ-ਘੱਟ 8 ਅੱਖਰ)</span></span><input type="password" name="password" required minlength="8" maxlength="128" autocomplete="current-password"></label>
+      <div class="btns">
+        <button class="btn" type="submit"><span class="t" lang="en">Sign in</span><span class="t" lang="hi">साइन इन करें</span><span class="t" lang="bn">সাইন ইন করুন</span><span class="t" lang="mr">साइन इन करा</span><span class="t" lang="ta">உள்நுழைய</span><span class="t" lang="te">సైన్ ఇన్</span><span class="t" lang="gu">સાઇન ઇન કરો</span><span class="t" lang="kn">ಸೈನ್ ಇನ್</span><span class="t" lang="ml">സൈൻ ഇൻ</span><span class="t" lang="pa">ਸਾਈਨ ਇਨ ਕਰੋ</span></button>
+        <button class="btn secondary" type="submit" formaction="https://agrisense-backend-jagn.onrender.com/register"><span class="t" lang="en">Create account</span><span class="t" lang="hi">खाता बनाएँ</span><span class="t" lang="bn">অ্যাকাউন্ট তৈরি করুন</span><span class="t" lang="mr">खाते उघडा</span><span class="t" lang="ta">கணக்கை உருவாக்கு</span><span class="t" lang="te">ఖాతా సృష్టించండి</span><span class="t" lang="gu">ખાતું બનાવો</span><span class="t" lang="kn">ಖಾತೆ ರಚಿಸಿ</span><span class="t" lang="ml">അക്കൗണ്ട് ഉണ്ടാക്കുക</span><span class="t" lang="pa">ਖਾਤਾ ਬਣਾਓ</span></button>
+      </div>
+      <p class="agree"><span class="t" lang="en">By creating an account you agree to the <a href="https://agrisense-backend-jagn.onrender.com/terms">Terms and Conditions</a> and the <a href="https://agrisense-backend-jagn.onrender.com/privacy">Privacy Policy</a>.</span><span class="t" lang="hi">खाता बनाकर आप <a href="https://agrisense-backend-jagn.onrender.com/terms">नियम और शर्तें</a> और <a href="https://agrisense-backend-jagn.onrender.com/privacy">गोपनीयता नीति</a> से सहमत होते हैं।</span><span class="t" lang="bn">অ্যাকাউন্ট তৈরি করে আপনি <a href="https://agrisense-backend-jagn.onrender.com/terms">শর্তাবলি</a> ও <a href="https://agrisense-backend-jagn.onrender.com/privacy">গোপনীয়তা নীতি</a> মেনে নিচ্ছেন।</span><span class="t" lang="mr">खाते उघडून तुम्ही <a href="https://agrisense-backend-jagn.onrender.com/terms">अटी व शर्ती</a> आणि <a href="https://agrisense-backend-jagn.onrender.com/privacy">गोपनीयता धोरण</a> मान्य करता.</span><span class="t" lang="ta">கணக்கை உருவாக்குவதன் மூலம் <a href="https://agrisense-backend-jagn.onrender.com/terms">விதிமுறைகள் மற்றும் நிபந்தனைகள்</a> மற்றும் <a href="https://agrisense-backend-jagn.onrender.com/privacy">தனியுரிமைக் கொள்கை</a> ஆகியவற்றை ஏற்றுக்கொள்கிறீர்கள்.</span><span class="t" lang="te">ఖాతా సృష్టించడం ద్వారా మీరు <a href="https://agrisense-backend-jagn.onrender.com/terms">నిబంధనలు మరియు షరతులు</a> మరియు <a href="https://agrisense-backend-jagn.onrender.com/privacy">గోప్యతా విధానం</a>కు అంగీకరిస్తున్నారు.</span><span class="t" lang="gu">ખાતું બનાવીને તમે <a href="https://agrisense-backend-jagn.onrender.com/terms">નિયમો અને શરતો</a> અને <a href="https://agrisense-backend-jagn.onrender.com/privacy">ગોપનીયતા નીતિ</a> સાથે સંમત થાઓ છો.</span><span class="t" lang="kn">ಖಾತೆ ರಚಿಸುವ ಮೂಲಕ ನೀವು <a href="https://agrisense-backend-jagn.onrender.com/terms">ನಿಯಮಗಳು ಮತ್ತು ಷರತ್ತುಗಳು</a> ಮತ್ತು <a href="https://agrisense-backend-jagn.onrender.com/privacy">ಗೌಪ್ಯತಾ ನೀತಿ</a> ಗೆ ಒಪ್ಪುತ್ತೀರಿ.</span><span class="t" lang="ml">അക്കൗണ്ട് ഉണ്ടാക്കുന്നതിലൂടെ നിങ്ങൾ <a href="https://agrisense-backend-jagn.onrender.com/terms">നിബന്ധനകളും വ്യവസ്ഥകളും</a>, <a href="https://agrisense-backend-jagn.onrender.com/privacy">സ്വകാര്യതാ നയം</a> എന്നിവ അംഗീകരിക്കുന്നു.</span><span class="t" lang="pa">ਖਾਤਾ ਬਣਾ ਕੇ ਤੁਸੀਂ <a href="https://agrisense-backend-jagn.onrender.com/terms">ਨਿਯਮ ਅਤੇ ਸ਼ਰਤਾਂ</a> ਅਤੇ <a href="https://agrisense-backend-jagn.onrender.com/privacy">ਪਰਦੇਦਾਰੀ ਨੀਤੀ</a> ਨਾਲ ਸਹਿਮਤ ਹੁੰਦੇ ਹੋ।</span></p>
+      <p class="agree"><span class="t" lang="en">Your chats are saved to your account so you can return to them later.</span><span class="t" lang="hi">आपकी चैट आपके खाते में सेव रहती हैं, ताकि आप बाद में उन्हें फिर देख सकें।</span><span class="t" lang="bn">আপনার চ্যাটগুলো আপনার অ্যাকাউন্টে সংরক্ষিত থাকে, যাতে পরে আবার দেখতে পারেন।</span><span class="t" lang="mr">तुमच्या चॅट्स खात्यात सेव्ह राहतात, त्यामुळे नंतर पुन्हा पाहता येतात.</span><span class="t" lang="ta">உங்கள் உரையாடல்கள் கணக்கில் சேமிக்கப்படும்; பின்னர் மீண்டும் பார்க்கலாம்.</span><span class="t" lang="te">మీ చాట్‌లు మీ ఖాతాలో సేవ్ అవుతాయి, తర్వాత మళ్లీ చూడవచ్చు.</span><span class="t" lang="gu">તમારી ચેટ તમારા ખાતામાં સાચવાય છે, જેથી પછી ફરી જોઈ શકો.</span><span class="t" lang="kn">ನಿಮ್ಮ ಚಾಟ್‌ಗಳು ನಿಮ್ಮ ಖಾತೆಯಲ್ಲಿ ಉಳಿಯುತ್ತವೆ, ನಂತರ ಮತ್ತೆ ನೋಡಬಹುದು.</span><span class="t" lang="ml">നിങ്ങളുടെ ചാറ്റുകൾ അക്കൗണ്ടിൽ സേവ് ചെയ്യപ്പെടും; പിന്നീട് വീണ്ടും കാണാം.</span><span class="t" lang="pa">ਤੁਹਾਡੀਆਂ ਚੈਟਾਂ ਤੁਹਾਡੇ ਖਾਤੇ ਵਿੱਚ ਸੁਰੱਖਿਅਤ ਰਹਿੰਦੀਆਂ ਹਨ, ਤਾਂ ਜੋ ਤੁਸੀਂ ਬਾਅਦ ਵਿੱਚ ਦੇਖ ਸਕੋ।</span></p>
     </div>
-    <p class="note"><span class="t" lang="en">Your chats are saved to your account so you can return to them later.</span><span class="t" lang="hi">आपकी चैट आपके खाते में सेव रहती हैं, ताकि आप बाद में उन्हें फिर देख सकें।</span><span class="t" lang="bn">আপনার চ্যাটগুলো আপনার অ্যাকাউন্টে সংরক্ষিত থাকে, যাতে পরে আবার দেখতে পারেন।</span><span class="t" lang="mr">तुमच्या चॅट्स खात्यात सेव्ह राहतात, त्यामुळे नंतर पुन्हा पाहता येतात.</span><span class="t" lang="ta">உங்கள் உரையாடல்கள் கணக்கில் சேமிக்கப்படும்; பின்னர் மீண்டும் பார்க்கலாம்.</span><span class="t" lang="te">మీ చాట్‌లు మీ ఖాతాలో సేవ్ అవుతాయి, తర్వాత మళ్లీ చూడవచ్చు.</span><span class="t" lang="gu">તમારી ચેટ તમારા ખાતામાં સાચવાય છે, જેથી પછી ફરી જોઈ શકો.</span><span class="t" lang="kn">ನಿಮ್ಮ ಚಾಟ್‌ಗಳು ನಿಮ್ಮ ಖಾತೆಯಲ್ಲಿ ಉಳಿಯುತ್ತವೆ, ನಂತರ ಮತ್ತೆ ನೋಡಬಹುದು.</span><span class="t" lang="ml">നിങ്ങളുടെ ചാറ്റുകൾ അക്കൗണ്ടിൽ സേവ് ചെയ്യപ്പെടും; പിന്നീട് വീണ്ടും കാണാം.</span><span class="t" lang="pa">ਤੁਹਾਡੀਆਂ ਚੈਟਾਂ ਤੁਹਾਡੇ ਖਾਤੇ ਵਿੱਚ ਸੁਰੱਖਿਅਤ ਰਹਿੰਦੀਆਂ ਹਨ, ਤਾਂ ਜੋ ਤੁਸੀਂ ਬਾਅਦ ਵਿੱਚ ਦੇਖ ਸਕੋ।</span></p>
   </main>
+  <footer class="foot"><a href="https://agrisense-backend-jagn.onrender.com/terms"><span class="t" lang="en">Terms and Conditions</span><span class="t" lang="hi">नियम और शर्तें</span><span class="t" lang="bn">শর্তাবলি</span><span class="t" lang="mr">अटी व शर्ती</span><span class="t" lang="ta">விதிமுறைகள் மற்றும் நிபந்தனைகள்</span><span class="t" lang="te">నిబంధనలు మరియు షరతులు</span><span class="t" lang="gu">નિયમો અને શરતો</span><span class="t" lang="kn">ನಿಯಮಗಳು ಮತ್ತು ಷರತ್ತುಗಳು</span><span class="t" lang="ml">നിബന്ധനകളും വ്യവസ്ഥകളും</span><span class="t" lang="pa">ਨਿਯਮ ਅਤੇ ਸ਼ਰਤਾਂ</span></a><a href="https://agrisense-backend-jagn.onrender.com/privacy"><span class="t" lang="en">Privacy Policy</span><span class="t" lang="hi">गोपनीयता नीति</span><span class="t" lang="bn">গোপনীয়তা নীতি</span><span class="t" lang="mr">गोपनीयता धोरण</span><span class="t" lang="ta">தனியுரிமைக் கொள்கை</span><span class="t" lang="te">గోప్యతా విధానం</span><span class="t" lang="gu">ગોપનીયતા નીતિ</span><span class="t" lang="kn">ಗೌಪ್ಯತಾ ನೀತಿ</span><span class="t" lang="ml">സ്വകാര്യതാ നയം</span><span class="t" lang="pa">ਪਰਦੇਦਾਰੀ ਨੀਤੀ</span></a></footer>
 </form>
 </body></html>
